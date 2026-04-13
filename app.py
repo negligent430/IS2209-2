@@ -1,5 +1,7 @@
 import os
+import random
 from dotenv import load_dotenv
+from flask import Flask, render_template, url_for, redirect, session, request, flash
 from flask import Flask, render_template
 from supabase import create_client, Client
 import requests
@@ -12,17 +14,66 @@ key: str = os.environ.get("SUPABASE_KEY")
 supabase: Client = create_client(url, key)
 
 app = Flask(__name__)
-
+app.secret_key = os.environ.get("SECRET_KEY")
 api_key = os.getenv("DOG_API")
-url = "https://api.thedogapi.com/v1/images/search"
 
+def sort_breed_data(data):
+    return {
+        "id": data.get("id"),
+        "name": data.get("name"),
+        "life_span": data.get("life_span"),
+        "temperament": data.get("temperament"),
+        "origin": data.get("origin"),
+        "country_code": data.get("country_code"),
+        "description": data.get("description"),
+        "history": data.get("history"),
+        "weight": data.get("weight", {}).get("metric"),
+        "height": data.get("height", {}).get("metric"),
+        "image_url": data.get("image", {}).get("url"),
+    }
 
-@app.route('/')
-def hello_world():
-    response = requests.get(url, headers={"x-api-key": api_key})
-    if response.status_code == 200:
-        data = response.json()
-        print(data)
+def api_breed_search(breed):
+    response = requests.get(
+        "https://api.thedogapi.com/v1/breeds/search",
+        headers={"x-api-key": api_key},
+        params={"q": breed}
+    )
+
+    if response.status_code != 200:
+        return None, "Connection Error"
+
+    data = response.json()
+    if not data:
+        return None, "Data Not Found"
+
+    return sort_breed_data(data[0]), None
+
+@app.route('/',)
+def index():
+    session["session_id"] = random.randint(10000, 99999)
+    return redirect(url_for('home'))
+
+@app.route('/home', methods=['GET', 'POST'])
+def home():
+    if not session.get("session_id"):
+        return redirect(url_for('index'))
+    if request.method == 'POST':
+        breed = request.form['breed'].lower()
+        response = (
+            supabase.table("dog_breeds")
+            .select("*")
+            .ilike("name", f"%{breed}%")
+            .execute()
+        )
+        if not response.data:
+            data, error = api_breed_search(breed)
+            if data:
+                return redirect(url_for('breed', breed_id=data['id']))
+            if not data:
+                flash("Breed not found, please try again.")
+
+    return render_template("index.html")
+
 
 
 @app.route('/result')
