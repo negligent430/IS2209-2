@@ -31,6 +31,21 @@ def sort_breed_data(data):
         "height": data.get("height", {}).get("metric"),
         "image_url": data.get("image", {}).get("url"),
     }
+def api_random():
+    response = requests.get(
+        "https://api.thedogapi.com/v1/breeds/",
+        headers={"x-api-key": api_key}
+    )
+
+    if response.status_code != 200:
+        return None, "Connection Error"
+
+    data = response.json()
+    if not data:
+        return None, "Data Not Found"
+
+    return sort_breed_data(random.choice(data)), None
+
 
 def api_breed_search(breed):
     response = requests.get(
@@ -83,7 +98,16 @@ def home():
 
     return render_template("index.html")
 
-
+@app.route('/random', methods=['GET', 'POST'])
+def random_breed():
+    if not session.get("session_id"):
+        return redirect(url_for('index'))
+    data, error = api_random()
+    if data:
+        send_to_supabase(data)
+        return redirect(url_for('breed', breed_id=data['id']))
+    else:
+        return None
 
 @app.route('/result')
 def result():
