@@ -1,9 +1,15 @@
 import os
 from dotenv import load_dotenv
 from flask import Flask, render_template
+from supabase import create_client, Client
 import requests
 
 load_dotenv()
+
+# Grab keys from .env and Sets up connection to Supabase
+url: str = os.environ.get("SUPABASE_URL")
+key: str = os.environ.get("SUPABASE_KEY")
+supabase: Client = create_client(url, key)
 
 app = Flask(__name__)
 
