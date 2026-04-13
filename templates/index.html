@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dog Breeds</title>
+  <style>
+    body {
+      background-color: #f7f5f2;
+      font-family: Georgia, serif;
+      text-align: center;
+      padding-top: 200px;
+    }
+
+    h1 {
+      font-size: 2rem;
+      color: #2c2c2c;
+      margin-bottom: 20px;
+    }
+
+    input[type="text"] {
+      width: 260px;
+      padding: 8px 12px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      font-family: Georgia, serif;
+    }
+
+
+    button {
+      padding: 8px 18px;
+      background-color: #2c2c2c;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      font-family: Georgia, serif;
+      cursor: pointer;
+      margin-left: 6px;
+    }
+
+    button:hover {
+      background-color: #444444;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Dog Breeds</h1>
+
+  <form method="post">
+      <input type="text" name="breed" placeholder="Search breeds…" required />
+        <button type="submit">Search</button>
+      {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for message in messages %}
+                    <p>{{ message }}</p>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+  </form>
+
+</body>
+</html>
