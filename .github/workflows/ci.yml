@@ -20,5 +20,25 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
+      - name: Lint with ruff
+        run: |
+          pip install ruff
+          ruff check .
+
+      - name: Run tests with coverage
+        run: |
+          pip install pytest pytest-cov
+          pytest --cov=. --cov-report=term-missing
+
       - name: Build Docker image
         run: docker build -t test-image .
+
+      - name: Log in to GHCR
+        if: github.ref == 'refs/heads/main'
+        run: echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - name: Push image to GHCR
+        if: github.ref == 'refs/heads/main'
+        run: |
+          docker tag test-image ghcr.io/${{ github.repository_owner }}/deployhub:latest
+          docker push ghcr.io/${{ github.repository_owner }}/deployhub:latest
