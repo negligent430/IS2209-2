@@ -45,7 +45,6 @@ def api_random():
 
     return sort_breed_data(random.choice(data)), None
 
-
 def api_breed_search(breed):
     response = requests.get(
         "https://api.thedogapi.com/v1/breeds/search",
@@ -63,12 +62,20 @@ def api_breed_search(breed):
     return sort_breed_data(data[0]), None
 
 def send_to_supabase(breed_data):
+    log(f"Saving breed to Supabase: {breed_data.get('name')}")
     response = (
         supabase.table("dog_breeds")
         .upsert(breed_data)
         .execute()
     )
     return response.data[0]
+
+def log(message, session_id=None):
+    supabase.table("log").insert({
+        "session": session_id or "System",
+        "message": message
+    }).execute()
+
 
 @app.route('/',)
 def index():
@@ -81,6 +88,7 @@ def home():
         return redirect(url_for('index'))
     if request.method == 'POST':
         breed = request.form['breed'].lower()
+        log("User searched for breed: " + breed, session.get('session_id'))
         response = (
             supabase.table("dog_breeds")
             .select("*")
@@ -90,11 +98,14 @@ def home():
         if not response.data:
             data, error = api_breed_search(breed)
             if data:
+                log("Breed pulled from API: " + str(data.get('name')), session.get('session_id'))
                 send_to_supabase(data)
                 return redirect(url_for('breed', breed_id=data['id']))
             if not data:
+                log("Breed not found for search: " + breed, session.get('session_id'))
                 flash("Breed not found, please try again.")
         else:
+            log("Breed pulled from Supabase for: " + breed)
             return redirect(url_for('breed', breed_id=response.data[0]['id']))
     return render_template("index.html")
 
@@ -102,11 +113,14 @@ def home():
 def random_breed():
     if not session.get("session_id"):
         return redirect(url_for('index'))
+    log("User requested a random breed", session.get('session_id'))
     data, error = api_random()
     if data:
+        log("Random breed selected: " + str(data.get('name')))
         send_to_supabase(data)
         return redirect(url_for('breed', breed_id=data['id']))
     else:
+        log("Random breed API error: " + error)
         return None
 
 @app.route("/breed/<int:breed_id>")
@@ -115,8 +129,10 @@ def breed(breed_id):
         return redirect(url_for('index'))
     response = supabase.table("dog_breeds").select("*").eq("id", breed_id).execute()
     if not response.data:
+        log("Breed not found in Supabase for id: " + str(breed_id))
         return redirect(url_for('home'))
     data = response.data[0]
+    log("User viewed breed: " + str(data.get('name')), session.get('session_id'))
     return render_template("result.html", breed=data)
 
 @app.route('/health')
@@ -170,9 +186,16 @@ def status():
     return render_template("health.html", health=health)
 
 
-@app.route('/logs')
+@app.route('/logs', methods=['GET', 'POST'])
 def logs():
-    return 'Hello World!'
+    if not session.get("session_id"):
+        return redirect(url_for('index'))
+    log("User viewed logs", session.get('session_id'))
+    response = supabase.table("log").select("*").execute()
+    if not response.data:
+        flash("Error:No logs Found")
+        return redirect(url_for('home'))
+    return render_template("logs.html", logs=response.data)
 
 if __name__ == '__main__':
     app.run()
