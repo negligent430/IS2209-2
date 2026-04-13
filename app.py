@@ -48,6 +48,14 @@ def api_breed_search(breed):
 
     return sort_breed_data(data[0]), None
 
+def send_to_supabase(breed_data):
+    response = (
+        supabase.table("dog_breeds")
+        .upsert(breed_data)
+        .execute()
+    )
+    return response.data[0]
+
 @app.route('/',)
 def index():
     session["session_id"] = random.randint(10000, 99999)
@@ -68,6 +76,7 @@ def home():
         if not response.data:
             data, error = api_breed_search(breed)
             if data:
+                send_to_supabase(data)
                 return redirect(url_for('breed', breed_id=data['id']))
             if not data:
                 flash("Breed not found, please try again.")
