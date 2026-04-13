@@ -86,7 +86,31 @@ def health():
 
 @app.route('/status')
 def status():
-    return 'Hello World!'
+    if not session.get("session_id"):
+        return redirect(url_for('index'))
+    try:
+        supabase.table("dog_breeds").select("*").limit(1).execute()
+        supabase_status = "Working"
+    except Exception:
+        supabase_status = "Degraded"
+
+    try:
+        response = requests.get(
+            "https://api.thedogapi.com/v1/breeds?limit=1",
+            headers={"x-api-key": api_key},
+            timeout=3
+        )
+        response.raise_for_status()
+        api_status = "Working"
+    except Exception:
+        api_status = "Degraded"
+
+    health = {
+        "Supabase": supabase_status,
+        "DogAPI": api_status
+    }
+    return render_template("health.html", health=health)
+
 
 @app.route('/logs')
 def logs():
