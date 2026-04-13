@@ -80,6 +80,7 @@ def log(message, session_id=None):
 @app.route('/',)
 def index():
     session["session_id"] = random.randint(10000, 99999)
+    log("Session id set", session["session_id"])
     return redirect(url_for('home'))
 
 @app.route('/home', methods=['GET', 'POST'])
@@ -160,6 +161,7 @@ def health():
 
 @app.route('/status')
 def status():
+    log("User viewed /status")
     if not session.get("session_id"):
         return redirect(url_for('index'))
     try:
