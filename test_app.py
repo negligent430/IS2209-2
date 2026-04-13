@@ -10,7 +10,7 @@ def client():
 # Runs /health for json
 def test_health(client):
     response = client.get('/health')
-    assert response.status_code == 200 #
+    assert response.status_code == 200
 
 #Runs homepage
 def test_homepage(client):
