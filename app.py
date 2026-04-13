@@ -113,9 +113,30 @@ def random_breed():
 def result():
     return 'Hello World!'
 
+
+
 @app.route('/health')
 def health():
-    return 'Hello World!'
+    try:
+        supabase.table("dog_breeds").select("id").limit(1).execute()
+        supabase_health = True
+    except Exception:
+        supabase_health = False
+
+    try:
+        response = requests.get(
+            "https://api.thedogapi.com/v1/breeds?limit=1",
+            headers={"x-api-key": api_key},
+            timeout=3
+        )
+        api_health = response.status_code == 200
+    except Exception:
+        api_health = False
+
+    overall = "working" if supabase_health and api_health else "degraded"
+
+    return {"status": overall, "supabase": supabase_health, "dog_api": api_health}
+
 
 @app.route('/status')
 def status():
