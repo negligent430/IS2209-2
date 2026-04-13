@@ -94,7 +94,8 @@ def home():
                 return redirect(url_for('breed', breed_id=data['id']))
             if not data:
                 flash("Breed not found, please try again.")
-
+        else:
+            return redirect(url_for('breed', breed_id=response.data[0]['id']))
     return render_template("index.html")
 
 @app.route('/random', methods=['GET', 'POST'])
@@ -108,20 +109,15 @@ def random_breed():
     else:
         return None
 
-app.route("/breed/<int:breed_id>")
+@app.route("/breed/<int:breed_id>")
 def breed(breed_id):
     if not session.get("session_id"):
         return redirect(url_for('index'))
     response = supabase.table("dog_breeds").select("*").eq("id", breed_id).execute()
     if not response.data:
-        log("Breed not found in Supabase for id: " + str(breed_id))
         return redirect(url_for('home'))
     data = response.data[0]
-    log("User viewed breed: " + str(data.get('name')), session.get('session_id'))
     return render_template("result.html", breed=data)
-
-
-
 
 @app.route('/health')
 def health():
