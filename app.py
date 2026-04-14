@@ -13,9 +13,11 @@ key: str = os.environ.get("SUPABASE_KEY")
 supabase: Client = create_client(url, key)
 
 app = Flask(__name__)
+# Grabs enviormental variables
 app.secret_key = os.environ.get("SECRET_KEY")
 api_key = os.getenv("DOG_API")
 
+# Gathers relevent data and makes it easy to use
 def sort_breed_data(data):
     return {
         "id": data.get("id"),
@@ -30,6 +32,8 @@ def sort_breed_data(data):
         "height": data.get("height", {}).get("metric"),
         "image_url": data.get("image", {}).get("url"),
     }
+
+# Grabs all breeds and selects one at random
 def api_random():
     response = requests.get(
         "https://api.thedogapi.com/v1/breeds/",
@@ -45,6 +49,7 @@ def api_random():
 
     return sort_breed_data(random.choice(data)), None
 
+#Searches for a specific breed
 def api_breed_search(breed):
     response = requests.get(
         "https://api.thedogapi.com/v1/breeds/search",
@@ -61,6 +66,7 @@ def api_breed_search(breed):
 
     return sort_breed_data(data[0]), None
 
+# Sends data from api to supabase once sorted
 def send_to_supabase(breed_data):
     log(f"Saving breed to Supabase: {breed_data.get('name')}")
     response = (
@@ -70,18 +76,22 @@ def send_to_supabase(breed_data):
     )
     return response.data[0]
 
+#records logs from application and stores in supabase
 def log(message, session_id=None):
     supabase.table("log").insert({
         "session": session_id or "System",
         "message": message
     }).execute()
 
+#Sets users session and sends them to homepage
 
 @app.route('/',)
 def index():
     session["session_id"] = random.randint(10000, 99999)
+    log("Session id set", session["session_id"])
     return redirect(url_for('home'))
 
+#Gathers users decsion on specific or random breed and sends them to correct breeds webpage
 @app.route('/home', methods=['GET', 'POST'])
 def home():
     if not session.get("session_id"):
@@ -109,6 +119,7 @@ def home():
             return redirect(url_for('breed', breed_id=response.data[0]['id']))
     return render_template("index.html")
 
+# Tells the application to display a random breed
 @app.route('/random', methods=['GET', 'POST'])
 def random_breed():
     if not session.get("session_id"):
@@ -123,6 +134,7 @@ def random_breed():
         log("Random breed API error: " + error)
         return None
 
+# Shows the breed result for specific or random
 @app.route("/breed/<int:breed_id>")
 def breed(breed_id):
     if not session.get("session_id"):
@@ -135,6 +147,7 @@ def breed(breed_id):
     log("User viewed breed: " + str(data.get('name')), session.get('session_id'))
     return render_template("result.html", breed=data)
 
+# Gathers data systems health and responds in json format
 @app.route('/health')
 def health():
     try:
@@ -157,9 +170,10 @@ def health():
 
     return {"status": overall, "supabase": supabase_health, "dog_api": api_health}
 
-
+# Gathers data systems health and responds in a webpage for visable to the user
 @app.route('/status')
 def status():
+    log("User viewed /status")
     if not session.get("session_id"):
         return redirect(url_for('index'))
     try:
@@ -185,6 +199,7 @@ def status():
     }
     return render_template("health.html", health=health)
 
+# Displays the user logs of anyone or the system logs and the time the event occured
 
 @app.route('/logs', methods=['GET', 'POST'])
 def logs():
