@@ -17,16 +17,24 @@ https://is2209-2.onrender.com/home
 5. Visit `/logs` to see application activity
 6. Visit `/health` to see JSON health check
 
-### Requirements
-- Python 3.11+
-- Docker
-- A Supabase account
+## Run Locally
+1. Clone the repository
+2. cd IS2209-2
+3. pip install -r requirements.txt
+4. Create a .env file using .env.example as a template
+5. flask run
+Note: You will need to create your own .env file
 
 ## Enviormental Variables
 - SUPABASE_URL=
 - SUPABASE_KEY=
 - DOG_API=
 - SECRET_KEY=
+
+### Requirements
+- Python 3.11+
+- Docker
+- A Supabase account
 
 ## Endpoints
 - /
