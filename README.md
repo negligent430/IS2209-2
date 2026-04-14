@@ -23,10 +23,10 @@ https://is2209-2.onrender.com/home
 - A Supabase account
 
 ## Enviormental Variables
-SUPABASE_URL=
-SUPABASE_KEY=
-DOG_API=
-SECRET_KEY=
+- SUPABASE_URL=
+- SUPABASE_KEY=
+- DOG_API=
+- SECRET_KEY=
 
 ## Endpoints
 /
