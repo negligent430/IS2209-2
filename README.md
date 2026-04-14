@@ -29,13 +29,13 @@ https://is2209-2.onrender.com/home
 - SECRET_KEY=
 
 ## Endpoints
-/
-/home
-/breed/<id>
-/random
-/health
-/status
-/logs
+- /
+- /home
+- /breed/<id>
+- /random
+- /health
+- /status
+- /logs
 
 ## CI/CD
 - GitHub Actions runs on every PR and push to main
