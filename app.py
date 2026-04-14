@@ -83,6 +83,7 @@ def log(message, session_id=None):
     }).execute()
 
 #Sets users session and sends them to homepage
+
 @app.route('/',)
 def index():
     session["session_id"] = random.randint(10000, 99999)
@@ -198,6 +199,7 @@ def status():
     return render_template("health.html", health=health)
 
 # Displays the user logs of anyone or the system logs and the time the event occured
+
 @app.route('/logs', methods=['GET', 'POST'])
 def logs():
     if not session.get("session_id"):
