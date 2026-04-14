@@ -2,7 +2,6 @@ import os
 import random
 from dotenv import load_dotenv
 from flask import Flask, render_template, url_for, redirect, session, request, flash
-from flask import Flask, render_template
 from supabase import create_client, Client
 import requests
 
@@ -95,7 +94,8 @@ def home():
                 return redirect(url_for('breed', breed_id=data['id']))
             if not data:
                 flash("Breed not found, please try again.")
-
+        else:
+            return redirect(url_for('breed', breed_id=response.data[0]['id']))
     return render_template("index.html")
 
 @app.route('/random', methods=['GET', 'POST'])
@@ -109,11 +109,15 @@ def random_breed():
     else:
         return None
 
-@app.route('/result')
-def result():
-    return 'Hello World!'
-
-
+@app.route("/breed/<int:breed_id>")
+def breed(breed_id):
+    if not session.get("session_id"):
+        return redirect(url_for('index'))
+    response = supabase.table("dog_breeds").select("*").eq("id", breed_id).execute()
+    if not response.data:
+        return redirect(url_for('home'))
+    data = response.data[0]
+    return render_template("result.html", breed=data)
 
 @app.route('/health')
 def health():
@@ -169,7 +173,6 @@ def status():
 @app.route('/logs')
 def logs():
     return 'Hello World!'
-
 
 if __name__ == '__main__':
     app.run()
