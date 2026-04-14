@@ -43,6 +43,14 @@
     button:hover {
       background-color: #444444;
     }
+
+    .dividr {
+    border: none;
+    border-top: 2px dashed #ccc;
+    width: 35%;
+    margin: 12px auto;
+}
+
   </style>
 </head>
 <body>
@@ -52,13 +60,17 @@
   <form method="post">
       <input type="text" name="breed" placeholder="Search breeds…" required />
         <button type="submit">Search</button>
-      {% with messages = get_flashed_messages() %}
-        {% if messages %}
-            {% for message in messages %}
-                    <p>{{ message }}</p>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for message in messages %}
+                        <p>{{ message }}</p>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        <hr class="dividr"/>
+      <a href="/random">
+      <button type="button">🎲</button>
+    </a>
   </form>
 
 </body>
