@@ -10,10 +10,9 @@ load_dotenv()
 # Grab keys from .env and Sets up connection to Supabase
 url: str = os.environ.get("SUPABASE_URL")
 key: str = os.environ.get("SUPABASE_KEY")
-supabase: Client = create_client(url, key)
-
+supabase: Client = create_client(url, key) if url and key else None
 app = Flask(__name__)
-# Grabs enviormental variables
+# Grabs environmental variables
 app.secret_key = os.environ.get("SECRET_KEY")
 api_key = os.getenv("DOG_API")
 
@@ -151,7 +150,7 @@ def breed(breed_id):
 def health():
     try:
         supabase.table("dog_breeds").select("id").limit(1).execute()
-        supabase_health = True
+        supabase_health = supabase is not None
     except Exception:
         supabase_health = False
 
