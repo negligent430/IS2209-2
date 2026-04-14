@@ -10,7 +10,7 @@ load_dotenv()
 # Grab keys from .env and Sets up connection to Supabase
 url: str = os.environ.get("SUPABASE_URL")
 key: str = os.environ.get("SUPABASE_KEY")
-supabase: Client = create_client(url, key)
+supabase: Client = create_client(url, key) if url and key else None
 
 app = Flask(__name__)
 # Grabs enviormental variables
